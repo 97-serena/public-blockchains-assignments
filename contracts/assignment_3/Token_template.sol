@@ -21,16 +21,27 @@ import "../BaseAssignment.sol";
 
 contract CensorableToken is ERC20, Ownable, BaseAssignment, AccessControl {
 
-    // Add state variables and events here.
+    mapping(address => bool) public isBlacklisted;
+    event Blacklisted(address indexed account);
+    event UnBlacklisted(address indexed account);
 
     // Constructor (could be slighlty changed depending on deployment script).
     constructor(string memory _name, string memory _symbol, uint256 _initialSupply, address _initialOwner)
-        BaseAssignment(0x0fc1027d91558dF467eCfeA811A8bCD74a927B1e)
+        BaseAssignment(0x8452E41BA34aC00458B70539264776b2a379448f)
         ERC20(_name, _symbol)
         Ownable(_initialOwner)
     {
 
-       // Mint tokens.
+        _mint(_initialOwner, 10 * 10 ** decimals());
+
+        address validator = getValidator();
+        _mint(validator, 10 * 10 ** decimals());
+
+        modifier onlyOwnerOrValidator() {
+        require(
+            msg.sender == owner() || isValidator(msg.sender),"Not owner or validator");
+        _;
+    }
 
        // Hint: get the decimals rights!
        // See: https://docs.soliditylang.org/en/develop/units-and-global-variables.html#ether-units 
